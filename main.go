@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-// Enquanto o cenário do tratamento ao método HTTP POST nos deixa mais perto do
+// Armazenando pontuações
 
 type StoragePlayerInMemory struct {}
 

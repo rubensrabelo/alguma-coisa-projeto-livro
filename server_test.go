@@ -18,11 +18,11 @@ func (p *PlayerStorageOutline) GetScoreByPlayer(name string) int {
 
 func TestGetPlayer(t *testing.T) {
 	storagePlayer := PlayerStorageOutline{
-        map[string]int{
-            "Maria": 20,
-            "Pedro": 10,
-        },
-    }
+		map[string]int{
+			"Maria": 20,
+			"Pedro": 10,
+		},
+	}
 
 	server := &PlayerServer{&storagePlayer}
 
@@ -32,7 +32,8 @@ func TestGetPlayer(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
-		verifyRequestBody(t, response.Body.String(), "20")
+		checkResponseCodeStatus(t, response.Code, http.StatusOK)
+		checkRequestBody(t, response.Body.String(), "20")
 	})
 
 	t.Run("retornar resultado de Pedro", func(t *testing.T) {
@@ -41,18 +42,41 @@ func TestGetPlayer(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
-		verifyRequestBody(t, response.Body.String(), "10")
+		checkResponseCodeStatus(t, response.Code, http.StatusOK)
+		checkRequestBody(t, response.Body.String(), "10")
+	})
+
+	t.Run("retorna 404 para jogador não encontrado", func(t *testing.T) {
+		request := newRequestGetScore("Jorge")
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		received := response.Code
+		expected := http.StatusNotFound
+
+		if received != expected {
+			t.Errorf("received status %d expected %d", received, expected)
+		}
 	})
 }
 
 func newRequestGetScore(name string) *http.Request {
-    request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/players/%s", name), nil)
-    return request
+	request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/players/%s", name), nil)
+	return request
 }
 
-func verifyRequestBody(t *testing.T, received, expected string) {
-    t.Helper()
+func checkRequestBody(t *testing.T, received, expected string) {
+	t.Helper()
+	if received != expected {
+		t.Errorf("corpo da requisição é inválido, obtive '%s' esperava '%s'", received, expected)
+	}
+}
+
+
+func checkResponseCodeStatus(t *testing.T, received, expected int) {
+	t.Helper()
     if received != expected {
-        t.Errorf("corpo da requisição é inválido, obtive '%s' esperava '%s'", received, expected)
+        t.Errorf("não recebeu código de status HTTP esperado, received %d, esperado %d", received, expected)
     }
 }
