@@ -5,18 +5,29 @@ import (
 	"net/http"
 )
 
-// Armazenando pontuações
+// JSON, roteamento e aninhamento
 
-type StoragePlayerInMemory struct {}
+type InMemoryPlayerStorage struct {
+	scores        map[string]int
+	recordVictory []string
+}
 
-func (s *StoragePlayerInMemory) GetScoreByPlayer(name string) int {
-	return 123
+func (i *InMemoryPlayerStorage) GetScoreByPlayer(name string) int {
+	return i.scores[name]
+}
+
+func (i *InMemoryPlayerStorage) RecordsVictory(name string) {
+	i.scores[name]++
 }
 
 func main() {
-	server := &PlayerServer{&StoragePlayerInMemory{}}
-	
+	storage := &InMemoryPlayerStorage{
+		scores: map[string]int{},
+	}
+	server := &PlayerServer{storage: storage}
+
+	log.Println("Servidor rodando na porta :5000...")
 	if err := http.ListenAndServe(":5000", server); err != nil {
-		log.Fatalf("não foi possível escutar na porta 5000 %v", err)
+		log.Fatalf("Erro ao iniciar o servidor: %v", err)
 	}
 }
